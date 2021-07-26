@@ -1,0 +1,11 @@
+/home/shared-mobility/Point/src/main/java/sharedmobility/Points.java
+/home/shared-mobility/Point/src/main/java/sharedmobility/PointsRepository.java
+/home/shared-mobility/Point/src/main/java/sharedmobility/PointApplication.java
+/home/shared-mobility/Point/src/main/java/sharedmobility/Saved.java
+/home/shared-mobility/Point/src/main/java/sharedmobility/config/kafka/KafkaProcessor.java
+/home/shared-mobility/Point/src/main/java/sharedmobility/AbstractEvent.java
+/home/shared-mobility/Point/src/main/java/sharedmobility/PolicyHandler.java
+/home/shared-mobility/Point/src/main/java/sharedmobility/PaymentCanceled.java
+/home/shared-mobility/Point/src/main/java/sharedmobility/PaymentApproved.java
+/home/shared-mobility/Point/src/main/java/sharedmobility/SaveCanceled.java
+/home/shared-mobility/Point/src/main/java/sharedmobility/PointsController.java

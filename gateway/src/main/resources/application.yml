@@ -28,6 +28,10 @@ spring:
           uri: http://localhost:8085
           predicates:
             - Path=/rent/** 
+        - id: Point
+          uri: http://localhost:8086
+          predicates:
+            - Path=/point/**       
       globalcors:
         corsConfigurations:
           '[/**]':

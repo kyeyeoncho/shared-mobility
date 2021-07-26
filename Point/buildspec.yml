@@ -1,8 +1,8 @@
 version: 0.2
-   
+ 
 env:
   variables:
-    _PROJECT_NAME: "user22-order"
+    _PROJECT_NAME: "user22-point"
 
 phases:
   install:
@@ -23,7 +23,7 @@ phases:
       - echo $CODEBUILD_RESOLVED_SOURCE_VERSION
       - echo start command
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
-      - cd Order
+      - cd Point
   build:
     commands:
       - echo Build started on `date`
@@ -79,7 +79,7 @@ phases:
                       - containerPort: 8080
                     readinessProbe:
                       httpGet:
-                        path: /order
+                        path: /point
                         port: 8080
                       initialDelaySeconds: 10
                       timeoutSeconds: 2
@@ -87,7 +87,7 @@ phases:
                       failureThreshold: 10
                     livenessProbe:
                       httpGet:
-                        path: /order
+                        path: /point
                         port: 8080
                       initialDelaySeconds: 120
                       timeoutSeconds: 2

@@ -1,0 +1,12 @@
+sharedmobility/PointsRepository.class
+sharedmobility/PaymentApproved.class
+sharedmobility/AbstractEvent$1.class
+sharedmobility/config/kafka/KafkaProcessor.class
+sharedmobility/PaymentCanceled.class
+sharedmobility/PointApplication.class
+sharedmobility/SaveCanceled.class
+sharedmobility/Saved.class
+sharedmobility/PointsController.class
+sharedmobility/AbstractEvent.class
+sharedmobility/Points.class
+sharedmobility/PolicyHandler.class
