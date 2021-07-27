@@ -30,6 +30,7 @@ public class DashboardViewHandler {
                 dashboard.setOrderStatus(ordered.getOrderStatus());
                 dashboard.setCustomerId(ordered.getCustomerId());
                 dashboard.setOrderDate(ordered.getOrderDate());
+
                 // view 레파지 토리에 save
                 dashboardRepository.save(dashboard);
             }
@@ -127,6 +128,48 @@ public class DashboardViewHandler {
                     dashboard.setRentId(Rented.getRentId());
                     dashboard.setRentStatus(Rented.getRentStatus());
                     dashboard.setRentDate(Rented.getRentDate());
+                // view 레파지 토리에 save
+                dashboardRepository.save(dashboard);
+                }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    //추가
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenSaved_then_UPDATE_6(@Payload Saved Saved) {
+        try {
+            if (!Saved.validate()) return;
+                // view 객체 조회
+
+                    List<Dashboard> dashboardList = dashboardRepository.findByOrderId(Saved.getOrderId());
+                    for(Dashboard dashboard : dashboardList){
+                    // view 객체에 이벤트의 eventDirectValue 를 set 함
+                    dashboard.setPointId(Saved.getPointId());
+                    dashboard.setPointStatus(Saved.getPointStatus());
+                    dashboard.setPointChangeDate(Saved.getPointChangeDate());
+                // view 레파지 토리에 save
+                dashboardRepository.save(dashboard);
+                }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenSaveCanceled_then_UPDATE_7(@Payload SaveCanceled SaveCanceled) {
+        try {
+            if (!SaveCanceled.validate()) return;
+                // view 객체 조회
+
+                    List<Dashboard> dashboardList = dashboardRepository.findByOrderId(SaveCanceled.getOrderId());
+                    for(Dashboard dashboard : dashboardList){
+                    // view 객체에 이벤트의 eventDirectValue 를 set 함
+                    dashboard.setPointId(SaveCanceled.getPointId());
+                    dashboard.setPointStatus(SaveCanceled.getPointStatus());
+                    dashboard.setPointChangeDate(SaveCanceled.getPointChangeDate());
                 // view 레파지 토리에 save
                 dashboardRepository.save(dashboard);
                 }

@@ -4,27 +4,31 @@ import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name="Dashboard_table")
+@Table(name = "Dashboard_table")
 public class Dashboard {
 
-        @Id
-        @GeneratedValue(strategy=GenerationType.AUTO)
-        private Long dashboardId;
-        private Long customerId;
-        private Long orderId;
-        private Long paymentId;
-        private Long rentId;
-        private String payStatus;
-        private String orderStatus;
-        private String orderDate;
-        private String cancelDate;
-        private String returnDate;
-        private String payDate;
-        private Long price;
-        private String payCancelDate;
-        private String rentStatus;
-        private String rentDate;
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long dashboardId;
+    private Long customerId;
+    private Long orderId;
+    private Long paymentId;
+    private Long rentId;
+    private String payStatus;
+    private String orderStatus;
+    private String orderDate;
+    private String cancelDate;
+    private String returnDate;
+    private String payDate;
+    private Long price;
+    private String payCancelDate;
+    private String rentStatus;
+    private String rentDate;
+    // 추가
+    private Long pointId;
+    private Long currentPoint;
+    private String pointChangeDate;
+    private String pointStatus;
 
         public Long getDashboardId() {
             return dashboardId;
@@ -133,5 +137,36 @@ public class Dashboard {
         public void setRentDate(String rentDate) {
             this.rentDate = rentDate;
         }
+        //  
+        public Long getPointId() {
+            return pointId;
+        }
 
+        public void setPointId(Long pointId) {
+            this.pointId = pointId;
+        }
+      
+        public String getPointChangeDate() {
+            return pointChangeDate;
+        }
+
+        public void setPointChangeDate(String pointChangeDate) {
+            this.pointChangeDate = pointChangeDate;
+        }
+
+        public Long getCurrentPoint() {
+			return currentPoint;
+		}
+
+		public void setCurrentPoint(Long currentPoint) {
+			this.currentPoint = currentPoint;
+        }
+        
+        public String getPointStatus() {
+            return pointStatus;
+        }
+
+        public void setPointStatus(String pointStatus) {
+            this.pointStatus = pointStatus;
+        }
 }

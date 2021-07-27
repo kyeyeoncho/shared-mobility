@@ -2,7 +2,7 @@ version: 0.2
  
 env:
   variables:
-    _PROJECT_NAME: "user01-dashboard"
+    _PROJECT_NAME: "user22-dashboard"
 
 phases:
   install:

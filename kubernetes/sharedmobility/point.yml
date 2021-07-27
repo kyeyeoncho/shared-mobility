@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: point
-          image: 879772956301.dkr.ecr.ca-central-1.amazonaws.com/user22-point:latest
+          image: 879772956301.dkr.ecr.ca-central-1.amazonaws.com/user22-point:v1
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -54,3 +54,4 @@ spec:
       targetPort: 8080
   selector:
     app: point
+  type: LoadBalancer
