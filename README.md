@@ -150,20 +150,27 @@
         - Core Domain:  예약(front), 대여 : 없어서는 안될 핵심 서비스이며, 연견 Up-time SLA 수준을 99.999% 목표, 배포주기는 예약의 경우 1주일 1회 미만, 대여의 경우 1개월 1회 미만
         - Supporting Domain: 재고   : 경쟁력을 내기위한 서비스이며, SLA 수준은 연간 60% 이상 uptime 목표, 배포주기는 각 팀의 자율이나 표준 스프린트 주기가 1주일 이므로 1주일 1회 이상을 기준으로 함.
         - General Domain:   결제 : 결제서비스로 3rd Party 외부 서비스를 사용하는 것이 경쟁력이 높음 (핑크색으로 이후 전환할 예정)
+(추가)
+![바운디드컨텍스트묶기](https://user-images.githubusercontent.com/25606601/127099295-a0d45d52-b760-4d73-861c-7237b755690d.PNG)
 
 ### 폴리시 부착 (괄호는 수행주체, 폴리시 부착을 둘째단계에서 해놔도 상관 없음. 전체 연계가 초기에 드러남)
 
 ![image](https://user-images.githubusercontent.com/31404198/125081926-8a832700-e101-11eb-8f7d-7a32cd4189ab.png)
-
+(추가)
+![폴리시부착](https://user-images.githubusercontent.com/25606601/127099321-cf660d83-eeb6-4467-807e-155d714e64bb.PNG)
 ### 폴리시의 이동과 컨텍스트 매핑 (점선은 Pub/Sub, 실선은 Req/Resp)
 
 ![image](https://user-images.githubusercontent.com/31404198/125081998-9ec72400-e101-11eb-942f-a5beec455466.png)
+(추가)
+![재배열과컨텍스트매핑](https://user-images.githubusercontent.com/25606601/127099357-7f667f6c-6a0d-416b-8b33-3f7b8724b231.PNG)
 
 ### 완성된 1차 모형
 
 ![image](https://user-images.githubusercontent.com/31404198/125188470-e4552f80-e26e-11eb-9a3a-c6784c62287b.png)
 
     - View Model 추가
+(추가)
+![1차수정](https://user-images.githubusercontent.com/25606601/127099380-62701b10-30fb-41d2-a82d-c719137161f0.PNG)
 
 ### 1차 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
 
