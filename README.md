@@ -192,6 +192,18 @@
     - 반납요청이 확인되면 재고가 증가한다. (ok)
     - 사용자는 대여상태를 대시보드에서 확인한다. (View-green sticker 의 추가로 ok)
 
+![11](https://user-images.githubusercontent.com/25606601/127100071-a6eacb5b-51d8-4910-bda1-5dcb74f03c43.PNG)
+
+    - 사용자가 킥보드 선택 후 예약한다. (ok)
+    - 예약한 킥보드에 대해서 결제한다. (ok)
+    - 결제가 확인되면 포인트가 적립된다 (View-green sticker 의 추가로 ok)
+
+![22](https://user-images.githubusercontent.com/25606601/127100222-7135edbd-050c-44df-9a40-fc8dd09bd899.PNG)
+
+    - 사용자가 킥보드 예약을 취소한다. (ok)
+    - 예약을 취소하면 결제가 취소된다. (ok)
+    - 결제취소가 확인되면 포인트가 적립 취소된다 (View-green sticker 의 추가로 ok)
+
 ### 비기능 요구사항에 대한 검증
 
 ![image](https://user-images.githubusercontent.com/31404198/125188612-4ca41100-e26f-11eb-8139-2cb390446974.png)
@@ -226,6 +238,9 @@
   mvn spring-boot:run 
 
   cd gateway
+  mvn spring-boot:run
+  
+  cd point
   mvn spring-boot:run
 ```
 
@@ -295,6 +310,10 @@ spring:
           uri: http://rent:8080
           predicates:
             - Path=/rent/** 
+	- id: point
+	  uri: http://point:8080
+  	  predicates:
+    	    - Path=/point/**    
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -306,6 +325,7 @@ spring:
               - "*"
             allowCredentials: true
 ```
+
 - gateway Service yml 에 loadBalancer 적용
 ```yml
 apiVersion: v1
@@ -323,10 +343,15 @@ spec:
   type: LoadBalancer
 
 ```
+(추가)
+![loadbalancer적용](https://user-images.githubusercontent.com/25606601/127100589-17ce47a7-c7eb-4cee-931b-07908b6b1457.PNG)
+![그림2](https://user-images.githubusercontent.com/25606601/127100840-97c7b0a7-941c-48ba-8eeb-a9e180e57573.png)
+
 - 적용 이미지
 ![게이트웨이](https://user-images.githubusercontent.com/30138356/125386847-edaddb80-e3d7-11eb-9738-5c8904b3a28e.PNG)
 
 ## DDD 의 적용
+
 
 - 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: (예시는 PaymentInfo 마이크로 서비스). 이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하였다. 
 ``` JAVA
