@@ -39,6 +39,8 @@
 1. 사용자가 킥보드를 반납한다.
 1. 반납요청이 확인되면 재고가 증가한다.
 1. 사용자는 대여상태를 대시보드에서 확인한다.
+1. 결제가 확인되면 포인트가 적립된다. (추가)
+1. 결제 취소가 확인되면 포인트 적립이 취소된다. (추가)
 
 비기능적 요구사항
 1. 트랜잭션
@@ -123,10 +125,13 @@
 
 ### 이벤트 도출
 ![image](https://user-images.githubusercontent.com/31404198/125080856-48a5b100-e100-11eb-90d4-a738c74118ff.png)
+(추가)
+![이벤트도출](https://user-images.githubusercontent.com/25606601/127098951-9fbd503c-ec4e-430a-9a8f-2d09c468d1c3.PNG)
 
 ### 부적격 이벤트 탈락
 ![image](https://user-images.githubusercontent.com/31404198/125080894-53f8dc80-e100-11eb-8fc8-fe760889d6ea.png)
-
+(추가)
+![부적격이벤트탈락](https://user-images.githubusercontent.com/25606601/127099010-b846226e-7d71-42fa-80d9-a3f5d3abab02.PNG)
     - 과정중 도출된 잘못된 도메인 이벤트들을 걸러내는 작업을 수행함
 
 ### 액터, 커맨드 부착하여 읽기 좋게
