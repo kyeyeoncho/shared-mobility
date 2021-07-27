@@ -309,11 +309,7 @@ spring:
         - id: rent
           uri: http://rent:8080
           predicates:
-            - Path=/rent/** 
-	- id: point
-	  uri: http://point:8080
-  	  predicates:
-    	    - Path=/point/**    
+            - Path=/rent/**   
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -325,6 +321,9 @@ spring:
               - "*"
             allowCredentials: true
 ```
+(추가)
+![33](https://user-images.githubusercontent.com/25606601/127101490-fef981a3-f663-478f-801f-b4b6c760b600.PNG)
+![44](https://user-images.githubusercontent.com/25606601/127101494-d256c383-b259-469a-8f87-b727e2248314.PNG)
 
 - gateway Service yml 에 loadBalancer 적용
 ```yml
