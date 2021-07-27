@@ -448,6 +448,140 @@ public interface OrderInfoRepository extends PagingAndSortingRepository<OrderInf
 }
 
 ```
+- (추가) Points 어그리게잇 마이크로 서비스
+package sharedmobility;
+
+import javax.persistence.*;
+import org.springframework.beans.BeanUtils;
+import java.util.List;
+import java.util.Date;
+
+@Entity
+@Table(name="Points_table")
+public class Points {
+
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long pointId;
+    private Long orderId;
+    private Long payId;
+    private Long customerId;
+    private Long currentPoint;
+    private String pointChangeDate;
+    private String pointStatus; //SAVE, CANCEL
+
+    //엔티티 저장 후
+    @PostPersist
+    public void onPostPersist(){
+        if(this.currentPoint == -100){
+            SaveCanceled saveCanceled = new SaveCanceled();
+            BeanUtils.copyProperties(this, saveCanceled);
+            saveCanceled.publishAfterCommit();
+        }else if(this.currentPoint == 100){
+            Saved saved = new Saved();
+            BeanUtils.copyProperties(this, saved);
+            saved.publishAfterCommit();
+        }
+        /*       
+        Inquired inquired = new Inquired();
+        BeanUtils.copyProperties(this, inquired);
+        inquired.publishAfterCommit();
+        */
+
+    }
+
+    //엔티티 업데이트 후
+    @PostUpdate
+    public void onPostUpdate(){
+        if("CANCEL".equals(this.pointStatus)){
+            // 적립취소 상태
+            SaveCanceled canceled = new SaveCanceled();
+            BeanUtils.copyProperties(this, canceled);
+            canceled.publishAfterCommit();
+        }
+        
+        if("SAVE".equals(this.pointStatus)){
+            // 적립 상태
+            Saved saved = new Saved();
+            BeanUtils.copyProperties(this, saved);
+            saved.publishAfterCommit();
+        }
+    }    
+
+    public Long getPointId() {
+        return pointId;
+    }
+
+    public void setPointId(Long pointId) {
+        this.pointId = pointId;
+    }
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+    public Long getPayId() {
+        return payId;
+    }
+
+    public void setPayId(Long payId) {
+        this.payId = payId;
+    }
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+    public Long getCurrentPoint() {
+        return currentPoint;
+    }
+
+    public void setCurrentPoint(Long currentPoint) {
+        this.currentPoint = currentPoint;
+    }
+    public String getPointChangeDate() {
+        return pointChangeDate;
+    }
+
+    public void setPointChangeDate(String pointChangeDate) {
+        this.pointChangeDate = pointChangeDate;
+    }
+
+    public String getPointStatus() {
+        return pointStatus;
+    }
+
+    public void setPointStatus(String pointStatus) {
+        this.pointStatus = pointStatus;
+    }
+
+
+}
+
+- (추가) REST 의 RestRepository 를 적용
+package sharedmobility;
+import sharedmobility.config.kafka.KafkaProcessor;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+
+
+@SpringBootApplication
+@EnableBinding(KafkaProcessor.class)
+@EnableFeignClients
+public class PointApplication {
+    protected static ApplicationContext applicationContext;
+    public static void main(String[] args) {
+        applicationContext = SpringApplication.run(PointApplication.class, args);
+    }
+}
+
 ### 적용 후 REST API 의 테스트
 
   - 사용신청(order) 발생 시, req/res 방식으로 결제(payment) 서비스를 호출하고 결제 완료 후 발생하는 PayApproved Event 가 카프카로 송출된다. 
@@ -626,6 +760,65 @@ mvn spring-boot:run
 ```
 ![11](https://user-images.githubusercontent.com/30138356/125189746-9fcc9280-e274-11eb-8ede-260754fa66d9.PNG)
 
+- (추가) 결제승인, 결제취소에 대한 이벤트를 수신하여 자신의 정책을 수행하도록 PolicyHandler 구현
+
+    @StreamListener(KafkaProcessor.INPUT)
+    public void wheneverPaymentApproved_Save(@Payload PaymentApproved paymentApproved){
+
+        if(!paymentApproved.validate()) return;
+
+        System.out.println("\n\n##### listener Approve : " + paymentApproved.toJson() + "\n\n");
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat ("yyyy-MM-dd hh:mm:ss");
+        String today =  sdf.format(timestamp);
+
+        // 결제 승인 시, 포인트적립 가능 상태로 변경
+        Points points = new Points(); // 신규 생성
+        points.setOrderId(paymentApproved.getOrderId());  // orderId 저장
+        points.setPayId(paymentApproved.getPayId());  // payId 저장
+        points.setPointStatus("SAVE");  // 적립 상태 저장
+        points.setPointChangeDate(today);  // 승인 날짜
+        points.setCurrentPoint(Long.valueOf("100"));  // 포인트 적립
+
+        pointsRepository.save(points);
+
+        System.out.println("Notice : 포인트가 적립 되었습니다.");
+
+    }
+
+    @StreamListener(KafkaProcessor.INPUT)
+    public void wheneverPaymentCanceled_SaveCancel(@Payload PaymentCanceled paymentCanceled){
+
+        if(!paymentCanceled.validate()) return;
+
+        System.out.println("\n\n##### listener Return : " + paymentCanceled.toJson() + "\n\n");
+
+        // 결제 취소 수신 시, 포인트적립 취소 상태로 변경
+        Points points = new Points(); 
+        List<Points> pointList = pointsRepository.findByOrderId(paymentCanceled.getOrderId());
+
+        for (Points o : pointList) {
+            points = o;
+        }
+
+        if(points != null && !"CANCEL".equals(points.getPointStatus())){
+
+            points.setOrderId(paymentCanceled.getOrderId());  // orderId 저장
+            points.setPayId(paymentCanceled.getPayId());  // payId 저장
+    
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            SimpleDateFormat sdf = new SimpleDateFormat ("yyyy-MM-dd hh:mm:ss");
+            points.setPointChangeDate(sdf.format(timestamp));
+            points.setPointStatus("CANCEL");
+            points.setCurrentPoint(Long.valueOf("-100"));  // 포인트 적립 취소
+
+            pointsRepository.save(points);
+
+            System.out.println("Notice : 포인트가 적립 취소 되었습니다.");
+
+
+        }
+    }
 
 ## CQRS
 
@@ -909,6 +1102,94 @@ dashbaord CQRS 결과는 아래와 같다
 
 ![image](https://user-images.githubusercontent.com/22028798/125186621-5d03be00-e266-11eb-85a6-58cede9ce417.png) 
 
+- (추가) 모든 사용자가 언제든 모니터링 가능하도록 대시보드 추가 
+```
+    // Dashboard.java 추가
+    private Long pointId;
+    private Long currentPoint;
+    private String pointChangeDate;
+    private String pointStatus;
+
+	public Long getPointId() {
+	    return pointId;
+	}
+
+	public void setPointId(Long pointId) {
+	    this.pointId = pointId;
+	}
+
+	public String getPointChangeDate() {
+	    return pointChangeDate;
+	}
+
+	public void setPointChangeDate(String pointChangeDate) {
+	    this.pointChangeDate = pointChangeDate;
+	}
+
+	public Long getCurrentPoint() {
+	    return currentPoint;
+	}
+
+	public void setCurrentPoint(Long currentPoint) {
+	    this.currentPoint = currentPoint;
+	}
+
+	public String getPointStatus() {
+	    return pointStatus;
+	}
+
+	public void setPointStatus(String pointStatus) {
+	    this.pointStatus = pointStatus;
+	}
+}
+```
+```
+    //DashboardViewHandler.java 추가
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenSaved_then_UPDATE_6(@Payload Saved Saved) {
+        try {
+            if (!Saved.validate()) return;
+                // view 객체 조회
+
+                    List<Dashboard> dashboardList = dashboardRepository.findByOrderId(Saved.getOrderId());
+                    for(Dashboard dashboard : dashboardList){
+                    // view 객체에 이벤트의 eventDirectValue 를 set 함
+                    dashboard.setPointId(Saved.getPointId());
+                    dashboard.setPointStatus(Saved.getPointStatus());
+                    dashboard.setPointChangeDate(Saved.getPointChangeDate());
+                // view 레파지 토리에 save
+                dashboardRepository.save(dashboard);
+                }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenSaveCanceled_then_UPDATE_7(@Payload SaveCanceled SaveCanceled) {
+        try {
+            if (!SaveCanceled.validate()) return;
+                // view 객체 조회
+
+                    List<Dashboard> dashboardList = dashboardRepository.findByOrderId(SaveCanceled.getOrderId());
+                    for(Dashboard dashboard : dashboardList){
+                    // view 객체에 이벤트의 eventDirectValue 를 set 함
+                    dashboard.setPointId(SaveCanceled.getPointId());
+                    dashboard.setPointStatus(SaveCanceled.getPointStatus());
+                    dashboard.setPointChangeDate(SaveCanceled.getPointChangeDate());
+                // view 레파지 토리에 save
+                dashboardRepository.save(dashboard);
+                }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+```
+
+
 ## 폴리글랏 퍼시스턴스
 - CQRS 를 위한 Dashboard 서비스만 DB를 구분하여 적용함. 인메모리 DB인 hsqldb 사용.
 ```xml
@@ -1077,6 +1358,13 @@ data:
 - Deploy 완료
 ![image](https://user-images.githubusercontent.com/30138356/125383175-f7ccdb80-e3d1-11eb-81c5-522009d5a4ce.PNG)
 
+- (추가) CoudeBuild를 사용한 Point 이미지 Build & Push
+
+![코드빌드성공](https://user-images.githubusercontent.com/25606601/127103414-ace97567-a09b-4d13-8a5b-a22c6898b90b.PNG)
+![이미지생성](https://user-images.githubusercontent.com/25606601/127103340-59f67595-7570-4612-8204-8e05cd90641e.PNG)
+![이미지빌드](https://user-images.githubusercontent.com/25606601/127103220-538514e1-728f-4baf-8689-1135e3cf0802.PNG)
+![이미지푸쉬](https://user-images.githubusercontent.com/25606601/127103258-f9d2728a-72d3-4072-9c14-777ee8aa9a94.PNG)
+
 
 ## 무정지 재배포(Readiness Probe)
 - 현재 정상적으로 동작중인 상황 확인
@@ -1095,6 +1383,9 @@ data:
 
 ![image](https://user-images.githubusercontent.com/22028798/125400628-18565f00-e3ed-11eb-9c9c-ea4c64c6717d.png)
 
+- (추가)
+![read](https://user-images.githubusercontent.com/25606601/127104038-59c8ba03-709b-433e-926e-6c164decadfe.png)
+
 
 ## Self-healing (Liveness Probe)
 - deployment.yml에 정상 적용되어 있는 livenessProbe
@@ -1110,6 +1401,9 @@ data:
 ![image](https://user-images.githubusercontent.com/22028798/125394475-b1cd4300-e3e4-11eb-8c80-d953e29bed0c.png)
 ![image](https://user-images.githubusercontent.com/22028798/125394858-4c2d8680-e3e5-11eb-98d6-3a7e3409bb6e.png)
 
+- (추가) Liveness적용 => point의 restarts 카운트가 올라간 것을 확인
+![live](https://user-images.githubusercontent.com/25606601/127104097-f8b4e1f4-d356-447c-848d-721f75c7cb7d.png)
+![restarts](https://user-images.githubusercontent.com/25606601/127103873-a2a13b18-0aa5-4bfc-a8fe-a8368b2b417c.png)
 
 ## Config Map
 
@@ -1161,6 +1455,8 @@ data:
 - 적용 후 상세내역 확인 가능
 ![KakaoTalk_20210713_132118829](https://user-images.githubusercontent.com/30138356/125390117-4469e400-e3dd-11eb-991e-a5731893f401.png)
 
+- (추가)
+![comfigmap](https://user-images.githubusercontent.com/25606601/127103577-989f3e85-4088-4403-b3c0-7e27c6275625.PNG)
 
 ## Circuit Breaker
 - 서킷 브레이킹 프레임워크 선택 : Hystrix 옵션을 사용하여 구현함
@@ -1213,3 +1509,7 @@ hystrix:
 - (오토스케일 적용 결과) siege -c10 -t105 -r10 -v --content-type "application/json" 'http://gateway:8080/order POST {"orderId" : 1, "customerId": 1}'
 ![KakaoTalk_20210713_114858955](https://user-images.githubusercontent.com/30138356/125382970-9a388f00-e3d1-11eb-9dd8-9c8359f79433.png)
 ![KakaoTalk_20210713_114900577](https://user-images.githubusercontent.com/30138356/125382972-9ad12580-e3d1-11eb-8e54-7811f98966b8.png)
+
+- (추가) 사전작업으로 Metric-Server 설치 후 HPA적용
+![hpa적용](https://user-images.githubusercontent.com/25606601/127104247-455d70f2-69a5-4c3b-9a2a-5bb3ce4e36fb.PNG)
+
