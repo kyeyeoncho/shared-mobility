@@ -343,12 +343,11 @@ spec:
   type: LoadBalancer
 
 ```
+- 적용 이미지
+![게이트웨이](https://user-images.githubusercontent.com/30138356/125386847-edaddb80-e3d7-11eb-9738-5c8904b3a28e.PNG)
 (추가)
 ![loadbalancer적용](https://user-images.githubusercontent.com/25606601/127100589-17ce47a7-c7eb-4cee-931b-07908b6b1457.PNG)
 ![그림2](https://user-images.githubusercontent.com/25606601/127100840-97c7b0a7-941c-48ba-8eeb-a9e180e57573.png)
-
-- 적용 이미지
-![게이트웨이](https://user-images.githubusercontent.com/30138356/125386847-edaddb80-e3d7-11eb-9738-5c8904b3a28e.PNG)
 
 ## DDD 의 적용
 
